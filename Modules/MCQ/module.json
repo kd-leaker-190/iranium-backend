@@ -1,0 +1,11 @@
+{
+    "name": "MCQ",
+    "alias": "mcq",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\MCQ\\Providers\\MCQServiceProvider"
+    ],
+    "files": []
+}

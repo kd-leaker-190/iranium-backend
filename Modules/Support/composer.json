@@ -1,0 +1,27 @@
+{
+    "name": "nwidart/support",
+    "description": "",
+    "authors": [
+        {
+            "name": "Ali Mashayekhi",
+            "email": "alim201381@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Support\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+        }
+    }
+}

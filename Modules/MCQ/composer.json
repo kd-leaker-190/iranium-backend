@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/mcq",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\MCQ\\": "app/",
+            "Modules\\MCQ\\Database\\Factories\\": "database/factories/",
+            "Modules\\MCQ\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\MCQ\\Tests\\": "tests/"
+        }
+    }
+}
