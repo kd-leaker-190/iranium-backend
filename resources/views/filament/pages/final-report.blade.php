@@ -1,13 +1,5 @@
 <x-filament-panels::page>
-    <x-filament::section>
-        <x-slot name="heading">انتخاب کوهورت / رویداد</x-slot>
-
-        {{ $this->form }}
-    </x-filament::section>
-
-    @if ($startDate)
-        @livewire(\App\Filament\Widgets\FinalReportStatsWidget::class, ['startDate' => $startDate], key($startDate))
-    @endif
+    @livewire(\App\Filament\Widgets\FinalReportStatsWidget::class)
 
     <x-filament::section>
         {{ $this->table }}

@@ -16,58 +16,38 @@ use Modules\MCQ\Models\MCQ;
 use Modules\Task\Models\Task;
 
 /**
- * Single source of truth for the Final Report feature (Filament page, PDF, Excel export).
+ * Single source of truth for the ranking population/order used by the Final Report
+ * (Filament page, PDF, Excel export) AND the public Leaderboard API.
  * Reuses teams.score / teams.coin (kept up to date by ScoreTeamObserver / TeamCoinObserver)
  * as the ranking source, and the ScoreTeam / TeamCoin ledgers for the per-team breakdown.
+ *
+ * All teams are eligible for ranking — `start` is a registration timestamp only and must
+ * never be used to filter which teams participate (see PR discussion: a prior cohort-by-date
+ * heuristic here excluded ~1/3 of production teams, many with real, active scores).
  */
 class FinalReportService
 {
     /**
-     * Distinct cohorts (by start date), each with its team count, most populated first.
-     *
-     * @return Collection<int, object{start_date: string, team_count: int}>
+     * Base ranking query, all teams: score DESC, coin DESC, id ASC (deterministic tiebreak).
+     * Exposed so the Filament table and the Leaderboard API can share the exact same
+     * population/order instead of duplicating the ranking rule elsewhere.
      */
-    public function cohorts(): Collection
-    {
-        return Team::selectRaw('DATE(start) as start_date, COUNT(*) as team_count')
-            ->groupBy('start_date')
-            ->orderByDesc('team_count')
-            ->orderByDesc('start_date')
-            ->get();
-    }
-
-    /**
-     * The cohort (start date) containing the largest number of teams.
-     * Deliberately NOT "most recent date" (LeaderboardController's rule), since stray/test
-     * teams on later dates would otherwise be picked over the real event cohort.
-     */
-    public function defaultCohort(): ?string
-    {
-        return $this->cohorts()->first()?->start_date;
-    }
-
-    /**
-     * Base ranking query for a cohort: score DESC, coin DESC, id ASC (deterministic tiebreak).
-     * Exposed so the Filament table can paginate/sort server-side using the exact same rule
-     * used for the winner/summary/PDF/Excel, instead of duplicating the ordering elsewhere.
-     */
-    public function rankedTeamsQuery(string $startDate): Builder
+    public function rankedTeamsQuery(): Builder
     {
         return Team::query()
-            ->whereDate('start', $startDate)
             ->orderByDesc('score')
             ->orderByDesc('coin')
             ->orderBy('id');
     }
 
     /**
-     * Teams for a cohort, ranked score DESC, coin DESC, id ASC, with sequential rank numbers.
+     * All teams, ranked score DESC, coin DESC, id ASC, with sequential rank numbers.
      *
      * @return Collection<int, Team>
      */
-    public function rankedTeams(string $startDate): Collection
+    public function rankedTeams(): Collection
     {
-        return $this->rankedTeamsQuery($startDate)
+        return $this->rankedTeamsQuery()
             ->get()
             ->values()
             ->each(function (Team $team, int $index) {
@@ -76,7 +56,7 @@ class FinalReportService
     }
 
     /**
-     * Executive summary block for a ranked cohort.
+     * Executive summary block for the ranked teams.
      *
      * @param Collection<int, Team> $rankedTeams
      */
@@ -134,15 +114,14 @@ class FinalReportService
     }
 
     /**
-     * Every ScoreTeam ledger row for a cohort, labelled the same way as teamBreakdown().
+     * Every ScoreTeam ledger row, for all teams, labelled the same way as teamBreakdown().
      * Used by the Excel export's detail sheet so the labeling logic isn't duplicated.
      *
      * @return Collection<int, array{team: string, team_identifier: string, source: string, amount: int, created_at: ?\Illuminate\Support\Carbon}>
      */
-    public function scoreLedgerForCohort(string $startDate): Collection
+    public function scoreLedger(): Collection
     {
         return ScoreTeam::with(['scorable', 'team'])
-            ->whereHas('team', fn (Builder $q) => $q->whereDate('start', $startDate))
             ->orderBy('team_id')
             ->latest()
             ->get()
@@ -156,14 +135,13 @@ class FinalReportService
     }
 
     /**
-     * Every TeamCoin ledger row for a cohort, labelled the same way as teamBreakdown().
+     * Every TeamCoin ledger row, for all teams, labelled the same way as teamBreakdown().
      *
      * @return Collection<int, array{team: string, team_identifier: string, source: string, amount: int, created_at: ?\Illuminate\Support\Carbon}>
      */
-    public function coinLedgerForCohort(string $startDate): Collection
+    public function coinLedger(): Collection
     {
-        return TeamCoin::with(['coin', 'team'])
-            ->whereHas('team', fn (Builder $q) => $q->whereDate('start', $startDate))
+        return TeamCoin::with(['coinType', 'team'])
             ->orderBy('team_id')
             ->latest()
             ->get()
@@ -207,7 +185,7 @@ class FinalReportService
 
     protected function describeCoinSource(TeamCoin $entry): string
     {
-        $coinName = $entry->coin?->name;
+        $coinName = $entry->coinType?->name;
         $comment = $entry->comment;
 
         return trim(implode(' — ', array_filter([$coinName, $comment])) ?: 'دریافت سکه');

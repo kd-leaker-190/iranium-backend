@@ -8,16 +8,16 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class FinalReportStatsWidget extends StatsOverviewWidget
 {
-    public ?string $startDate = null;
+    // Lives in app/Filament/Widgets, which the panel auto-discovers for the main
+    // Dashboard (see AdminPanelProvider::discoverWidgets()). This widget is only
+    // meant for the Final Report page (embedded there directly via @livewire()),
+    // so opt out of panel-wide discovery to keep it off the Dashboard.
+    protected static bool $isDiscovered = false;
 
     protected function getStats(): array
     {
-        if (!$this->startDate) {
-            return [];
-        }
-
         $service = app(FinalReportService::class);
-        $ranked = $service->rankedTeams($this->startDate);
+        $ranked = $service->rankedTeams();
         $summary = $service->summary($ranked);
 
         [$first, $second, $third] = [

@@ -13,7 +13,7 @@ use Morilog\Jalali\Jalalian;
 class FinalReportRankingSheet implements FromCollection, WithHeadings, WithMapping, WithTitle
 {
     /** @param Collection<int, Team> $rankedTeams */
-    public function __construct(protected Collection $rankedTeams, protected string $startDate)
+    public function __construct(protected Collection $rankedTeams)
     {
     }
 
@@ -48,7 +48,7 @@ class FinalReportRankingSheet implements FromCollection, WithHeadings, WithMappi
             'امتیاز',
             'سکه',
             'جنسیت',
-            'کوهورت (تاریخ شروع)',
+            'تاریخ ثبت‌نام',
         ];
     }
 

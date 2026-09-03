@@ -181,54 +181,7 @@
         </div>
     @endif
 
-    <h2 class="section-title">۳ تیم برتر</h2>
-    <table class="ranking">
-        <thead>
-            <tr>
-                <th class="num">رتبه</th>
-                <th>نام تیم</th>
-                <th class="num">امتیاز</th>
-                <th class="num">سکه</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($summary['top3'] as $team)
-                <tr>
-                    <td class="num">{{ $team->rank }}</td>
-                    <td>{{ $team->name }}</td>
-                    <td class="num">{{ number_format($team->score) }}</td>
-                    <td class="num">{{ number_format($team->coin) }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <h2 class="section-title">رده‌بندی کامل ({{ number_format($rankedTeams->count()) }} تیم)</h2>
-    <table class="ranking">
-        <thead>
-            <tr>
-                <th class="num">رتبه</th>
-                <th>نام تیم</th>
-                <th>شناسه تیم</th>
-                <th class="num">امتیاز</th>
-                <th class="num">سکه</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($rankedTeams as $team)
-                <tr @class(['top3' => $team->rank <= 3])>
-                    <td class="num">{{ $team->rank }}</td>
-                    <td>{{ $team->name }}</td>
-                    <td>{{ $team->team_identifier }}</td>
-                    <td class="num">{{ number_format($team->score) }}</td>
-                    <td class="num">{{ number_format($team->coin) }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <div class="footer-note">
-        {{ $appName }} — گزارش نهایی — تولید‌شده در {{ \Morilog\Jalali\Jalalian::fromDateTime($generatedAt)->format('Y/m/d H:i') }}
-    </div>
-</body>
-</html>
+    <x-filament::section>
+        {{ $this->table }}
+    </x-filament::section>
+</x-filament-panels::page>

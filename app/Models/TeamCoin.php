@@ -22,4 +22,9 @@ class TeamCoin extends Model
     {
         return $this->belongsTo(Team::class, 'team_id');
     }
+
+    public function coinType(): BelongsTo
+    {
+        return $this->belongsTo(Coin::class, 'coin_id');
+    }
 }
